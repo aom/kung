@@ -48,10 +48,10 @@ case "$command" in
         docker-compose up --remove-orphans -d $@
       ;;
       "up:build")
-        docker-compose up --build --force-recreate --remove-orphans -d $@
+        docker-compose up --build --force-recreate -t 0 --remove-orphans -d $@
       ;;
       "up:recreate")
-        docker-compose up --force-recreate --remove-orphans -d $@
+        docker-compose up --force-recreate -t 0 --remove-orphans -d $@
       ;;
       "logs")
         docker-compose logs --tail=20 $@
@@ -79,12 +79,15 @@ case "$command" in
     $0 compose up:recreate $@
     $0 compose logs:tail $@
   ;;
-  "restart")
+  "restart"|"r")
     $0 compose restart $@
     $0 compose logs:tail $@
   ;;
   "stop")
     $0 compose stop $@
+  ;;
+  "stop:test")
+    docker-compose stop -t 9999
   ;;
   "shell")
     $0 compose run $1 /bin/bash || $0 compose run $1 /bin/sh
