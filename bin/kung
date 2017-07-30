@@ -1,0 +1,106 @@
+#!/usr/bin/env sh
+set -e
+
+DividerPrefix() {
+  printf "👑  $1: "
+}
+DividerSuffix () {
+  echo "$1
+"
+}
+Error () {
+  echo "☠️  $1"
+  exit 1
+}
+
+project=$(basename $(pwd))
+
+command=$1; shift
+case "$command" in
+  "compose"|"c")
+    DividerPrefix "compose"
+    subcommand=$1; shift
+    DividerSuffix "$subcommand"
+
+    case "$subcommand" in
+      "build")
+        docker-compose build $@
+      ;;
+      "exec")
+        docker-compose exec $1 $2
+      ;;
+      "stop")
+        docker-compose stop -t 0 $@
+      ;;
+      "rm")
+        $0 compose stop $@
+        docker-compose rm --force $@
+      ;;
+      "up")
+        docker-compose up --remove-orphans -d $@
+      ;;
+      "up-build")
+        docker-compose up --build --force-recreate --remove-orphans -d $@
+      ;;
+      "up-recreate")
+        docker-compose up --force-recreate --remove-orphans -d $@
+      ;;
+      "logs")
+        docker-compose logs --tail=20 $@
+      ;;
+      "logs-tail")
+        docker-compose logs -f $@
+      ;;
+      "run")
+        docker-compose run --entrypoint $2 $1
+      ;;
+      "restart")
+        docker-compose restart -t 0 $@
+      ;;
+      *)
+        Error "Unknown: $subcommand"
+      ;;
+    esac
+  ;;
+
+  "build")
+    $0 compose up-build $@
+    $0 compose logs-tail $@
+  ;;
+  "recreate")
+    $0 compose up-recreate $@
+    $0 compose logs-tail $@
+  ;;
+  "restart")
+    $0 compose restart $@
+    $0 compose logs-tail $@
+  ;;
+  "stop")
+    $0 compose stop $@
+  ;;
+  "shell")
+    $0 compose run $1 /bin/bash || $0 compose run $1 /bin/sh
+  ;;
+  "enter")
+    $0 compose exec $1 /bin/bash || $0 compose exec $1 /bin/sh
+  ;;
+  "attach")
+    docker attach $project_$1_1
+  ;;
+
+  "install")
+    dir=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
+    target=/usr/local/bin/kung
+
+    if [ ! -e "$target" ]; then
+      ln -s $dir/kung $target
+      echo "Created symlink in $target"
+    else
+      echo "Already exists in $target"
+      exit 1
+    fi
+  ;;
+  *)
+    Error "Unknown: $command"
+  ;;
+esac
