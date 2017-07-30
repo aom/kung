@@ -2,18 +2,26 @@
 set -e
 
 DividerPrefix() {
-  printf "👑  $1: "
+  printf "  👑  $1: "
 }
 DividerSuffix () {
   echo "$1
 "
 }
 Error () {
-  echo "☠️  $1"
+  echo "  ☠️  $1"
+  exit 1
+}
+Usage () {
+  echo "👑"
   exit 1
 }
 
 project=$(basename $(pwd))
+
+if [ "$1" = "" ]; then
+  Usage
+fi
 
 command=$1; shift
 case "$command" in
@@ -39,16 +47,16 @@ case "$command" in
       "up")
         docker-compose up --remove-orphans -d $@
       ;;
-      "up-build")
+      "up:build")
         docker-compose up --build --force-recreate --remove-orphans -d $@
       ;;
-      "up-recreate")
+      "up:recreate")
         docker-compose up --force-recreate --remove-orphans -d $@
       ;;
       "logs")
         docker-compose logs --tail=20 $@
       ;;
-      "logs-tail")
+      "logs:tail")
         docker-compose logs -f $@
       ;;
       "run")
@@ -64,16 +72,16 @@ case "$command" in
   ;;
 
   "build")
-    $0 compose up-build $@
-    $0 compose logs-tail $@
+    $0 compose up:build $@
+    $0 compose logs:tail $@
   ;;
   "recreate")
-    $0 compose up-recreate $@
-    $0 compose logs-tail $@
+    $0 compose up:recreate $@
+    $0 compose logs:tail $@
   ;;
   "restart")
     $0 compose restart $@
-    $0 compose logs-tail $@
+    $0 compose logs:tail $@
   ;;
   "stop")
     $0 compose stop $@
@@ -88,7 +96,7 @@ case "$command" in
     docker attach $project_$1_1
   ;;
 
-  "install")
+  "kung:install")
     dir=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
     target=/usr/local/bin/kung
 
@@ -98,6 +106,16 @@ case "$command" in
     else
       echo "Already exists in $target"
       exit 1
+    fi
+  ;;
+  "kung:edit")
+    dir=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )/kung
+    kung_file=$(readlink $dir)
+    echo "Opening $kung_file ..."
+    if [ -n "$EDITOR" ]; then
+      $EDITOR $kung_file
+    else
+      atom $kung_file
     fi
   ;;
   *)
