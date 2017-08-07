@@ -60,7 +60,11 @@ case "$command" in
         docker-compose logs -f $@
       ;;
       "run")
-        docker-compose run --entrypoint $2 $1
+        service=$1
+        shift
+        cmd=$@
+        echo $cmd
+        docker-compose run --entrypoint "$cmd" $service
       ;;
       "restart")
         docker-compose restart -t 0 $@
@@ -89,6 +93,7 @@ case "$command" in
   "stop:test")
     docker-compose stop -t 9999
   ;;
+
   "shell")
     $0 compose run $1 /bin/bash || $0 compose run $1 /bin/sh
   ;;
