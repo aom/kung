@@ -51,7 +51,7 @@ case "$command" in
         docker-compose up --build --force-recreate -t 0 --remove-orphans -d $@
       ;;
       "up:recreate")
-        docker-compose up --force-recreate -t 0 --remove-orphans -d $@
+        docker-compose up --no-deps --force-recreate -t 0 --remove-orphans -d $@
       ;;
       "logs")
         docker-compose logs --tail=20 $@
