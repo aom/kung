@@ -101,7 +101,18 @@ case "$command" in
     $0 compose exec $1 /bin/bash || $0 compose exec $1 /bin/sh
   ;;
   "attach")
-    docker attach $project_$1_1
+    docker attach --sig-proxy=false "$project"_"$1"_1
+  ;;
+
+  "ps")
+    docker-compose ps | grep Up
+  ;;
+
+  "push")
+    docker-compose push $@
+  ;;
+  "moby:shell")
+    docker run --rm -it --privileged --pid=host walkerlee/nsenter -t 1 -m -u -i -n sh
   ;;
 
   "kung:install")
