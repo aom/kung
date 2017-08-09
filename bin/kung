@@ -53,7 +53,7 @@ case "$command" in
       "up:recreate")
         docker-compose up --no-deps --force-recreate -t 0 --remove-orphans -d $@
       ;;
-      "logs")
+      "logs:last")
         docker-compose logs --tail=20 $@
       ;;
       "logs:tail")
@@ -75,7 +75,14 @@ case "$command" in
     esac
   ;;
 
+  "logs")
+    $0 compose logs:last $@
+    $0 compose logs:tail $@
+  ;;
   "build")
+    $0 compose build $@
+  ;;
+  "rebuild")
     $0 compose up:build $@
     $0 compose logs:tail $@
   ;;
