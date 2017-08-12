@@ -118,8 +118,15 @@ case "$command" in
   "push")
     docker-compose push $@
   ;;
+
   "moby:shell")
     docker run --rm -it --privileged --pid=host walkerlee/nsenter -t 1 -m -u -i -n sh
+  ;;
+  "moby:stop")
+    docker ps -q | xargs docker stop -t 0
+  ;;
+  "moby:kill")
+    docker ps -q | xargs docker kill
   ;;
 
   "kung:install")
