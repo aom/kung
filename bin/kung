@@ -82,11 +82,11 @@ case "$command" in
   "build")
     $0 compose build $@
   ;;
-  "rebuild")
+  "rebuild"|"rb")
     $0 compose up:build $@
     $0 compose logs:tail $@
   ;;
-  "recreate")
+  "recreate"|"rc")
     $0 compose up:recreate $@
     $0 compose logs:tail $@
   ;;
