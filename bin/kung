@@ -100,7 +100,21 @@ case "$command" in
   "stop:test")
     docker-compose stop -t 9999
   ;;
+  "freeze")
+    service=$1
+    if [ "$service" = "" ]; then
+      Error "Requires service"
+    fi
 
+    echo "version: '3.1'
+services:
+  $1:
+    entrypoint: '/bin/sh'
+    command: ['-c', 'echo sleeping forever..; while true; do sleep 9999999; done']
+" > docker-compose.override.yml
+    $0 compose up:recreate $1
+    rm docker-compose.override.yml
+  ;;
   "shell")
     $0 compose run $1 /bin/bash || $0 compose run $1 /bin/sh
   ;;
