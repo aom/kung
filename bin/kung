@@ -142,6 +142,9 @@ services:
   "moby:kill")
     docker ps -q | xargs docker kill
   ;;
+  "docker:stats")
+    docker stats --format "table {{.Name}}\t{{.CPUPerc}}\t{{.MemPerc}}\t{{.MemUsage}}\t{{.NetIO}}\t{{.BlockIO}}\t{{.PIDs}}"
+  ;;
 
   "kung:install")
     dir=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )
