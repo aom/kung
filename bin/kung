@@ -2,14 +2,27 @@
 set -e
 
 DividerPrefix() {
-  printf "  👑  $1: "
+  printf "👑  $1: "
 }
 DividerSuffix () {
   echo "$1
 "
 }
+
+Started () {
+  echo "🚀  $@ ($(date))"
+}
+
+Completed () {
+  echo "🏁  $@ ($(date))"
+}
+
+Info () {
+  echo "ℹ️  $@ ($(date))"
+}
+
 Error () {
-  echo "  ☠️  $1"
+  echo "☠️  $1"
   exit 1
 }
 Usage () {
@@ -25,6 +38,99 @@ fi
 
 command=$1; shift
 case "$command" in
+  "kontena"|"k")
+    DividerPrefix "kontena"
+    subcommand=$1; shift
+    DividerSuffix "$subcommand"
+
+    stack_name=$(kontena stack validate | grep "^stack:" | rev | cut -d' ' -f1 | rev)
+
+    case "$subcommand" in
+      "install")
+        kontena stack install --no-deploy
+        $0 kontena deploy $@
+      ;;
+      "upgrade")
+        kontena stack upgrade --no-deploy $stack_name
+        echo ""
+        $0 kontena deploy $@
+      ;;
+      "deploy")
+        $0 build $@
+        echo ""
+        if [ "$1" = "" ]; then
+          $0 push
+        else
+          push_pid_list=""
+          for service in $@; do
+            $0 push $@ &
+            push_pid_list="$push_pid_list $!"
+          done
+
+          for push_pid in $push_pid_list; do
+            if ! wait $push_pid; then
+              kill $push_pid_list 2>/dev/null || :
+              Error "docker push failed"
+            fi
+          done
+        fi
+
+        kontena stack deploy $stack_name >/dev/null &
+        deploy_pid=$!
+
+        echo ""; Started "deploy started"
+        kontena stack events -t $stack_name &
+        stack_events_pid=$!
+
+        wait $deploy_pid
+        echo ""; Completed "deploy completed"
+        kill $stack_events_pid
+
+        echo ""
+        $0 kontena logs $@
+      ;;
+      "logs")
+        [ "$KUNG_FRONTEND" != "noninteractive" ] && log_opts="-t"
+        if [ "$1" = "" ]; then
+          kontena stack logs $log_opts $stack_name
+        else
+          grep_filter="$stack_name.$1"
+          shift
+          for service in $@; do
+            grep_filter="$grep_filter\|$stack_name.$service"
+          done
+          kontena stack logs $log_opts $stack_name | grep "$grep_filter"
+        fi
+      ;;
+      "remove")
+        kontena stack remove --force $stack_name
+      ;;
+      "restart")
+        KUNG_FRONTEND=noninteractive $0 kontena stop
+        echo ""
+        $0 kontena start
+      ;;
+      "stop")
+        kontena stack stop $stack_name
+        echo ""
+        $0 kontena logs
+      ;;
+      "start")
+        kontena stack start $stack_name >/dev/null &
+        $0 kontena logs
+      ;;
+      "shell")
+        kontena service exec -it $stack_name/$1 bash || kontena service exec -it $stack_name/$1 sh
+      ;;
+      "ps")
+        kontena service ls
+      ;;
+      *)
+        Error "Unknown: $subcommand"
+      ;;
+    esac
+  ;;
+
   "compose"|"c")
     DividerPrefix "compose"
     subcommand=$1; shift
@@ -133,6 +239,11 @@ services:
     docker-compose push $@
   ;;
 
+  "tag")
+    docker tag "$project"_"$1" "$2"
+  ;;
+
+
   "moby:shell")
     docker run --rm -it --privileged --pid=host walkerlee/nsenter -t 1 -m -u -i -n sh
   ;;
@@ -158,6 +269,7 @@ services:
       exit 1
     fi
   ;;
+
   "kung:edit")
     dir=$( cd -P -- "$(dirname -- "$(command -v -- "$0")")" && pwd -P )/kung
     kung_file=$(readlink $dir)
