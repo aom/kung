@@ -111,25 +111,41 @@ case "$command" in
           for service in $@; do
             grep_filter="$grep_filter\|$stack_name.$service"
           done
-          kontena stack logs $log_opts $stack_name | grep "$grep_filter"
+          set +e
+            kontena stack logs $log_opts $stack_name | grep "$grep_filter"
+          set -e
         fi
       ;;
       "remove")
         kontena stack remove --force $stack_name
       ;;
       "restart")
-        KUNG_FRONTEND=noninteractive $0 kontena stop
+        KUNG_FRONTEND=noninteractive $0 kontena stop "$@"
         echo ""
-        $0 kontena start
+        $0 kontena start $@
       ;;
       "stop")
-        kontena stack stop $stack_name
-        echo ""
-        $0 kontena logs
+        if [ "$1" = "" ]; then
+          kontena stack stop $stack_name
+        else
+          for service in $@; do
+            kontena service stop $stack_name/$service
+          done
+        fi
+
+        $0 kontena logs $@
       ;;
       "start")
-        kontena stack start $stack_name >/dev/null &
-        $0 kontena logs
+        if [ "$1" = "" ]; then
+          kontena stack start $stack_name
+          $0 kontena logs $@
+        else
+          for service in $@; do
+            kontena service start $stack_name/$service
+          done
+        fi
+
+        $0 kontena logs $@
       ;;
       "show")
         if [ "$1" = "" ]; then
