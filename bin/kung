@@ -76,31 +76,25 @@ case "$command" in
       "deploy")
         $0 build $@
         echo ""
-        if [ "$1" = "" ]; then
-          $0 push
-        else
-          push_pid_list=""
-          for service in $@; do
-            $0 push $@ &
-            push_pid_list="$push_pid_list $!"
-          done
+        $0 push $@
 
-          for push_pid in $push_pid_list; do
-            if ! wait $push_pid; then
-              kill $push_pid_list 2>/dev/null || :
-              Error "docker push failed"
-            fi
+        if [ "$1" = "" ]; then
+          kontena stack deploy $stack_name >/dev/null &
+          deploy_pid=$!
+
+          echo ""; Started "stack deploy started"
+        else
+          service_deploy_pids=""
+          for service in $@; do
+            kontena service deploy --force $stack_name/$service >/dev/null &
+            service_deploy_pids="$service_deploy_pids $!"
           done
         fi
 
-        kontena stack deploy $stack_name >/dev/null &
-        deploy_pid=$!
-
-        echo ""; Started "deploy started"
         kontena stack events -t $stack_name &
         stack_events_pid=$!
 
-        wait $deploy_pid
+        wait $deploy_pid $service_deploy_pids
         echo ""; Completed "deploy completed"
         kill $stack_events_pid
 
@@ -137,11 +131,43 @@ case "$command" in
         kontena stack start $stack_name >/dev/null &
         $0 kontena logs
       ;;
-      "shell")
+      "show")
+        if [ "$1" = "" ]; then
+          kontena stack show $stack_name
+        else
+          kontena service show $stack_name/$1
+        fi
+      ;;
+      "exec")
+        service=$1
+        shift
+        kontena service exec -it $stack_name/$service $@
+      ;;
+      "enter")
         kontena service exec -it $stack_name/$1 bash || kontena service exec -it $stack_name/$1 sh
       ;;
+      "stats")
+        if [ "$1" = "" ]; then
+          echo "INSTANCE                       CPU %           MEM USAGE/LIMIT      MEM %           NET I/O"
+          services=$(kontena service ls --stack $stack_name -q)
+          for service in $services; do
+            kontena service stats $service | tail -n +2
+          done
+        else
+          kontena service stats $stack_name/$1
+        fi
+      ;;
       "ps")
-        kontena service ls
+        kontena service ls --stack $stack_name
+      ;;
+      "nodes")
+        nodes=$(kontena node ls -q)
+        for node in $nodes; do
+          echo $node
+          node_show=$(kontena node show $node)
+          printf "$node_show" | grep "public ip:"
+          printf "$node_show" | grep -A5 stats:
+        done
       ;;
       *)
         Error "Unknown: $subcommand"
@@ -156,7 +182,24 @@ case "$command" in
 
     case "$subcommand" in
       "build")
-        docker-compose build $@
+        if [ "$1" = "" ]; then
+          services=$(docker-compose config --services)
+        else
+          services=$@
+        fi
+
+        build_pid_list=""
+        for service in $services; do
+          docker-compose build $service &
+          build_pid_list="$build_pid_list $!"
+        done
+
+        for build_pid in $build_pid_list; do
+          if ! wait $build_pid; then
+            kill $build_pid_list 2>/dev/null || :
+            Error "docker build failed"
+          fi
+        done
       ;;
       "exec")
         docker-compose exec $1 $2
@@ -203,7 +246,7 @@ case "$command" in
     $0 compose logs:last $@
     $0 compose logs:tail $@
   ;;
-  "build")
+  "build"|"b")
     $0 compose build $@
   ;;
   "rebuild"|"rb")
@@ -254,7 +297,24 @@ services:
   ;;
 
   "push")
-    docker-compose push $@
+    if [ "$1" = "" ]; then
+      services=$(docker-compose config --services)
+    else
+      services=$@
+    fi
+
+    push_pid_list=""
+    for service in $services; do
+      docker-compose push $service &
+      push_pid_list="$push_pid_list $!"
+    done
+
+    for push_pid in $push_pid_list; do
+      if ! wait $push_pid; then
+        kill $push_pid_list 2>/dev/null || :
+        Error "docker push failed"
+      fi
+    done
   ;;
 
   "tag")
