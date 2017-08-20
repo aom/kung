@@ -70,6 +70,9 @@ case "$command" in
         echo ""
         $0 kontena deploy $@
       ;;
+      "events")
+        kontena stack events -t $stack_name
+      ;;
       "deploy")
         $0 build $@
         echo ""
