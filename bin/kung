@@ -17,10 +17,10 @@ OnExit () {
 trap 'OnExit' EXIT
 
 DividerPrefix() {
-  printf "👑  $1: "
+  printf "👑  $@: "
 }
 DividerSuffix () {
-  echo "$1
+  echo "$@
 "
 }
 
@@ -37,7 +37,7 @@ Info () {
 }
 
 Error () {
-  echo "☠️  $1"
+  echo "☠️  $@"
   exit 1
 }
 Usage () {
