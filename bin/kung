@@ -56,7 +56,7 @@ case "$command" in
   "kontena"|"k")
     DividerPrefix "kontena"
     subcommand=$1; shift
-    DividerSuffix "$subcommand"
+    DividerSuffix "$subcommand $@"
 
     stack_name=$(kontena stack validate | grep "^stack:" | rev | cut -d' ' -f1 | rev)
 
