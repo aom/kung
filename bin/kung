@@ -89,6 +89,9 @@ case "$command" in
     stack_name=$(kontena stack validate | grep "^stack:" | rev | cut -d' ' -f1 | rev)
 
     case "$subcommand" in
+      "ls")
+        kontena service ls
+      ;;
       "install")
         kontena stack install --no-deploy
         $0 kontena deploy $@
