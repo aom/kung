@@ -42,6 +42,34 @@ Error () {
 }
 Usage () {
   echo "👑"
+
+  case $1 in
+    "kontena")
+      echo "
+kontena
+  install
+  upgrade
+  remove
+  show
+
+  deploy
+  events
+  logs
+
+  nodes
+  ps
+  stats
+  ls
+
+  enter
+  exec
+
+  start
+  stop
+  restart
+"
+    ;;
+  esac
   exit 1
 }
 
@@ -186,7 +214,7 @@ case "$command" in
         done
       ;;
       *)
-        Error "Unknown: $subcommand"
+        Usage "kontena"
       ;;
     esac
   ;;
