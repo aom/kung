@@ -316,7 +316,7 @@ case "$command" in
     $0 compose stop $@
   ;;
   "stop:test")
-    docker-compose stop -t 9999
+    docker-compose stop -t 9999 $@
   ;;
   "freeze")
     service=$1
