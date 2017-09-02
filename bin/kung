@@ -147,6 +147,13 @@ case "$command" in
           set -e
         fi
       ;;
+      "logs:last")
+        if [ "$1" = "" ]; then
+          kontena stack logs $stack_name
+        else
+          kontena service logs $stack_name/$1
+        fi
+      ;;
       "remove"|"rm")
         kontena stack remove --force $stack_name
       ;;
@@ -164,7 +171,7 @@ case "$command" in
           done
         fi
 
-        $0 kontena logs $@
+        $0 kontena logs:last $@
       ;;
       "start")
         if [ "$1" = "" ]; then
