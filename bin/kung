@@ -309,15 +309,15 @@ case "$command" in
   ;;
   "rebuild"|"rb")
     $0 compose up:build $@
-    $0 compose logs:tail $@
+    $0 logs $@
   ;;
   "recreate"|"rc")
     $0 compose up:recreate $@
-    $0 compose logs:tail $@
+    $0 logs $@
   ;;
   "restart"|"r")
     $0 compose restart $@
-    $0 compose logs:tail $@
+    $0 logs $@
   ;;
   "stop")
     $0 compose stop $@
