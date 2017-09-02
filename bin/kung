@@ -86,7 +86,7 @@ case "$command" in
     subcommand=$1; shift
     DividerSuffix "$subcommand $@"
 
-    stack_name=$(kontena stack validate | grep "^stack:" | rev | cut -d' ' -f1 | rev)
+    stack_name=$(cat kontena.yml | grep "^stack:" | rev | cut -d' ' -f1 | rev)
 
     case "$subcommand" in
       "ls")
