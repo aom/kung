@@ -334,7 +334,10 @@ services:
     $0 compose run $1 /bin/bash || $0 compose run $1 /bin/sh
   ;;
   "enter")
-    $0 compose exec $1 /bin/bash || $0 compose exec $1 /bin/sh
+    service=$1
+    shift
+
+    $0 compose exec $service /bin/bash || $0 compose exec $service /bin/sh
   ;;
   "attach")
     docker attach --sig-proxy=false "$project"_"$1"_1
