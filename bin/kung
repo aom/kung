@@ -147,7 +147,7 @@ case "$command" in
           set -e
         fi
       ;;
-      "remove")
+      "remove"|"rm")
         kontena stack remove --force $stack_name
       ;;
       "restart")
