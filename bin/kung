@@ -60,6 +60,7 @@ kontena
   ps
   stats
   ls
+  monitor
 
   enter
   exec
@@ -89,6 +90,9 @@ case "$command" in
     stack_name=$(cat kontena.yml | grep "^stack:" | rev | cut -d' ' -f1 | rev)
 
     case "$subcommand" in
+      "monitor")
+        kontena stack monitor $stack_name
+      ;;
       "ls")
         kontena service ls
       ;;
