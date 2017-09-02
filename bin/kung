@@ -271,8 +271,11 @@ case "$command" in
         docker-compose logs --tail=20 $@
       ;;
       "logs:tail")
-        [ "$KUNG_FRONTEND" != "noninteractive" ] && log_opts="-t"
-        docker-compose logs $log_opts $@
+        if [ "$KUNG_FRONTEND" = "noninteractive" ]; then
+          echo "not tailing in noninteractive"
+        else
+          docker-compose logs --tail=0 -f $@
+        fi
       ;;
       "run")
         service=$1
