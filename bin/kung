@@ -335,7 +335,7 @@ case "$command" in
       Error "Requires service"
     fi
 
-    echo "version: '3.1'
+    echo "version: '2.1'
 services:
   $1:
     entrypoint: '/bin/sh'
