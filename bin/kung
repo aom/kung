@@ -329,6 +329,12 @@ case "$command" in
   "stop:test")
     docker-compose stop -t 9999 $@
   ;;
+
+  "refreeze")
+    $0 freeze $@
+    $0 enter $@
+  ;;
+
   "freeze")
     service=$1
     if [ "$service" = "" ]; then
