@@ -326,6 +326,9 @@ case "$command" in
   "stop")
     $0 compose stop $@
   ;;
+  "rm"|"destroy")
+    $0 compose rm $@
+  ;;
   "stop:test")
     docker-compose stop -t 9999 $@
   ;;
