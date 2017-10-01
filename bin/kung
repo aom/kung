@@ -282,9 +282,6 @@ case "$command" in
       "up")
         docker-compose up --remove-orphans -d $@
       ;;
-      "up:build")
-        docker-compose up --build --force-recreate -t 0 --remove-orphans -d $@
-      ;;
       "up:recreate")
         docker-compose up --no-deps --force-recreate -t 0 --remove-orphans -d $@
       ;;
@@ -322,8 +319,8 @@ case "$command" in
     $0 compose build $@
   ;;
   "rebuild"|"rb")
-    $0 compose up:build $@
-    $0 logs $@
+    $0 compose build $@
+    $0 recreate $@
   ;;
   "recreate"|"rc")
     $0 compose up:recreate $@
