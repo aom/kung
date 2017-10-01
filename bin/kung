@@ -87,7 +87,11 @@ case "$command" in
     subcommand=$1; shift
     DividerSuffix "$subcommand $@"
 
-    stack_name=$(cat kontena.yml | grep "^stack:" | rev | cut -d' ' -f1 | rev)
+    if [ "$STACK" = "" ]; then
+      stack_name=$(cat kontena.yml | grep "^stack:" | rev | cut -d' ' -f1 | rev)
+    else
+      stack_name=$STACK
+    fi
 
     case "$subcommand" in
       "monitor")
@@ -97,7 +101,7 @@ case "$command" in
         kontena service ls
       ;;
       "install")
-        kontena stack install --no-deploy
+        kontena stack install --no-deploy -n $stack_name
         $0 kontena deploy $@
       ;;
       "upgrade")
