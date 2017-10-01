@@ -244,6 +244,12 @@ case "$command" in
 
     case "$subcommand" in
       "build")
+        if [ -e docker-compose.common.yml ]; then
+          echo "found docker-compose.common.yml, building it"
+          docker-compose -f docker-compose.common.yml build
+          echo ""
+        fi
+
         if [ "$1" = "" ]; then
           services=$(docker-compose config --services)
         else
