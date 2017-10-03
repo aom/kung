@@ -330,7 +330,7 @@ case "$command" in
     $0 compose restart $@
     $0 logs $@
   ;;
-  "stop")
+  "stop"|"s")
     $0 compose stop $@
   ;;
   "rm"|"destroy")
@@ -340,7 +340,7 @@ case "$command" in
     docker-compose stop -t 9999 $@
   ;;
 
-  "refreeze")
+  "refreeze"|"rf")
     $0 freeze $@
     $0 enter $@
   ;;
