@@ -244,9 +244,9 @@ case "$command" in
 
     case "$subcommand" in
       "build")
-        if [ -e docker-compose.common.yml ]; then
-          echo "found docker-compose.common.yml, building it"
-          docker-compose -f docker-compose.common.yml build
+        if [ -e docker-compose.override.yml ]; then
+          echo "found docker-compose.override.yml, building it"
+          docker-compose -f docker-compose.override.yml build
           echo ""
         fi
 
