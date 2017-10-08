@@ -243,7 +243,14 @@ case "$command" in
     DividerSuffix "$subcommand"
 
     case "$subcommand" in
-      "build")
+      "build"|"build:refresh")
+        build_opts=""
+        case "$subcommand" in
+          "build:refresh")
+            build_opts="--no-cache --pull"
+          ;;
+        esac
+
         if [ -e docker-compose.override.yml ]; then
           echo "found docker-compose.override.yml, building it"
           docker-compose -f docker-compose.override.yml build
@@ -251,23 +258,22 @@ case "$command" in
         fi
 
         if [ "$1" = "" ]; then
-          services=$(docker-compose config --services)
+          docker-compose build $build_opts
         else
-          services=$@
+          build_pid_list=""
+          for service in $@; do
+            docker-compose build $build_opts $service &
+            build_pid_list="$build_pid_list $!"
+          done
+
+          for build_pid in $build_pid_list; do
+            if ! wait $build_pid; then
+              kill $build_pid_list 2>/dev/null || :
+              Error "docker build failed"
+            fi
+          done
         fi
 
-        build_pid_list=""
-        for service in $services; do
-          docker-compose build $service &
-          build_pid_list="$build_pid_list $!"
-        done
-
-        for build_pid in $build_pid_list; do
-          if ! wait $build_pid; then
-            kill $build_pid_list 2>/dev/null || :
-            Error "docker build failed"
-          fi
-        done
       ;;
       "exec")
         docker-compose exec $1 $2
@@ -320,6 +326,10 @@ case "$command" in
   ;;
   "rebuild"|"rb")
     $0 compose build $@
+    $0 recreate $@
+  ;;
+  "refresh")
+    $0 compose build:refresh $@
     $0 recreate $@
   ;;
   "recreate"|"rc")
