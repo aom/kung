@@ -398,7 +398,7 @@ services:
 
   "push")
     if [ "$1" = "" ]; then
-      services=$(docker-compose config --services)
+      services=$(docker-compose -f docker-compose.yml config --services)
     else
       services=$@
     fi
